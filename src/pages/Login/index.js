@@ -1,22 +1,33 @@
-import React from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Image, TextInput, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Image, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons'
 import financeLogo from '../../assets/financeLogo.png'
 const statusBarHight = StatusBar.currentHeight ? StatusBar.currentHeight + 22 : 64;
 import { getDatabase, ref, onValue, set } from 'firebase/database';
-import { getAuth, UserCredential } from 'firebase/auth'
+import { getAuth, signInWithEmailAndPassword, UserCredential } from 'firebase/auth'
 
 // import { Container } from './styles';
 
 export function Login({ navigation }) {
 
-    function handleCad() {
-        const db = getDatabase();
-        const reference = ref(db, 'users/' + 32);
-        set(reference, {
-            highscore: 10,
-        });
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
+
+
+    const Auth = getAuth();
+
+    function handlerLogin() {
+        setIsLoading(true)
+        signInWithEmailAndPassword(Auth, email, password)
+            .then((UserCredential) => {
+                const user = UserCredential.user;
+                setIsLoading(false)
+            }).catch((error) => {
+                console.log(error)
+                setIsLoading(false)
+            })
     }
     return <KeyboardAvoidingView style={styles.container} behavior='padding'>
         <View style={styles.content}>
@@ -25,14 +36,15 @@ export function Login({ navigation }) {
             <View>
                 <View style={styles.inputGroup}>
                     <Feather name='user' size={28} style={styles.inputIcon} />
-                    <TextInput placeholder='Email Address' style={styles.textInput} />
+                    <TextInput placeholder='Email Address' style={styles.textInput} onChangeText={(email) => setEmail(email)} />
                 </View>
                 <View style={styles.inputGroup}>
                     <MaterialCommunityIcons name='account-key-outline' size={34} style={styles.inputIcon} />
-                    <TextInput placeholder='Password' style={styles.textInput} />
+                    <TextInput placeholder='Password' style={styles.textInput} 
+                    onChangeText={(password) => setPassword(password)} secureTextEntry={true} />
                 </View>
             </View>
-            <TouchableOpacity style={styles.button} onPress={handleCad}>
+            <TouchableOpacity style={styles.button} onPress={handlerLogin}>
                 <Text style={styles.textButton}>Entrar</Text>
             </TouchableOpacity>
             <View style={styles.contentRegister}>
@@ -42,6 +54,9 @@ export function Login({ navigation }) {
                 </TouchableOpacity>
 
             </View>
+            {
+                isLoading ? <ActivityIndicator style={styles.activityIndicator} size="small" color='#419639' /> : null
+            }
         </View>
         <StatusBar style="dark" />
     </KeyboardAvoidingView>
@@ -119,8 +134,10 @@ const styles = StyleSheet.create({
     registerClick: {
         marginTop: 10,
         color: 'green',
+    },
 
-
+    activityIndicator: {
+        marginTop: 20
     }
 
 })

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons'
 import financeLogo from '../../assets/financeLogo.png'
 const statusBarHight = StatusBar.currentHeight ? StatusBar.currentHeight + 22 : 64;
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -18,22 +19,30 @@ export function Register({ navigation }) {
     const [name, setName] = useState()
     const [erro, setErro] = useState()
 
+    useEffect(() => {
+        async function getingAuthenticatedUser() {
+            const user = await AsyncStorage.getItem('userID')
+            console.log(user);
+        }
+        getingAuthenticatedUser()
+    }, [])
 
 
-
-    function handlerRegister() {
+    async function handlerRegister() {
 
         const auth = getAuth();
-        createUserWithEmailAndPassword(auth, email, password)
+        await createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-               navigation.navigate('Home')
+
+                AsyncStorage.setItem('userID', userCredential.user.uid)
+                // navigation.navigate('Home')
             }).catch((error) => {
                 const erroCode = error.code;
                 if (erroCode === 'auth/email-already-in-use') {
                     setErro('Email already in use')
                 }
             })
-          
+
 
 
     }
@@ -44,15 +53,15 @@ export function Register({ navigation }) {
             <View>
                 <View style={styles.inputGroup}>
                     <Feather name='user' size={28} style={styles.inputIcon} />
-                    <TextInput placeholder='Email Address' style={styles.textInput} onChangeText={(name) => setName(name)} />
+                    <TextInput placeholder='Name Person' placeholderTextColor='#419639' style={styles.textInput} onChangeText={(name) => setName(name)} />
                 </View>
                 <View style={styles.inputGroup}>
                     <AntDesign name='mail' size={28} style={styles.inputIcon} />
-                    <TextInput placeholder='Email Address' style={styles.textInput} onChangeText={(email) => setEmail(email)} />
+                    <TextInput placeholder='Email Address' placeholderTextColor='#419639' style={styles.textInput} onChangeText={(email) => setEmail(email)} />
                 </View>
                 <View style={styles.inputGroup}>
                     <MaterialCommunityIcons name='account-key-outline' size={34} style={styles.inputIcon} />
-                    <TextInput placeholder='Password' style={styles.textInput} onChangeText={(password) => setPassword(password)} />
+                    <TextInput placeholder='Password' placeholderTextColor='#419639' style={styles.textInput} onChangeText={(password) => setPassword(password)} />
                 </View>
             </View>
             <TouchableOpacity style={styles.button} onPress={handlerRegister}>
