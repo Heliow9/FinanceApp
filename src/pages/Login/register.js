@@ -1,44 +1,68 @@
-import React from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Image, TextInput, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons'
+import { Feather, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons'
 import financeLogo from '../../assets/financeLogo.png'
 const statusBarHight = StatusBar.currentHeight ? StatusBar.currentHeight + 22 : 64;
-import { getDatabase, ref, onValue, set } from 'firebase/database';
-import { getAuth, UserCredential } from 'firebase/auth'
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+
+
+
+
 
 // import { Container } from './styles';
 
-export function Login({ navigation }) {
+export function Register({ navigation }) {
+    const [email, setEmail] = useState()
+    const [password, setPassword] = useState()
+    const [name, setName] = useState()
+    const [erro, setErro] = useState()
 
-    function handleCad() {
-        const db = getDatabase();
-        const reference = ref(db, 'users/' + 32);
-        set(reference, {
-            highscore: 10,
-        });
+
+
+
+    function handlerRegister() {
+
+        const auth = getAuth();
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+               navigation.navigate('Home')
+            }).catch((error) => {
+                const erroCode = error.code;
+                if (erroCode === 'auth/email-already-in-use') {
+                    setErro('Email already in use')
+                }
+            })
+          
+
+
     }
-    return <KeyboardAvoidingView style={styles.container} behavior='padding'>
+    return <KeyboardAvoidingView style={styles.container} behavior={'padding'}  >
         <View style={styles.content}>
             <Image source={financeLogo} style={styles.imageLogo} />
-            <Text style={styles.title}>Finance APP</Text>
+            <Text style={styles.title}>Finance Register</Text>
             <View>
                 <View style={styles.inputGroup}>
                     <Feather name='user' size={28} style={styles.inputIcon} />
-                    <TextInput placeholder='Email Address' style={styles.textInput} />
+                    <TextInput placeholder='Email Address' style={styles.textInput} onChangeText={(name) => setName(name)} />
+                </View>
+                <View style={styles.inputGroup}>
+                    <AntDesign name='mail' size={28} style={styles.inputIcon} />
+                    <TextInput placeholder='Email Address' style={styles.textInput} onChangeText={(email) => setEmail(email)} />
                 </View>
                 <View style={styles.inputGroup}>
                     <MaterialCommunityIcons name='account-key-outline' size={34} style={styles.inputIcon} />
-                    <TextInput placeholder='Password' style={styles.textInput} />
+                    <TextInput placeholder='Password' style={styles.textInput} onChangeText={(password) => setPassword(password)} />
                 </View>
             </View>
-            <TouchableOpacity style={styles.button} onPress={handleCad}>
-                <Text style={styles.textButton}>Entrar</Text>
+            <TouchableOpacity style={styles.button} onPress={handlerRegister}>
+                <Text style={styles.textButton}>Cadastrar</Text>
             </TouchableOpacity>
             <View style={styles.contentRegister}>
-                <Text style={styles.register}>Cadastrar</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                    <Text style={styles.registerClick}>clique aqui</Text>
+                <Text>{erro}</Text>
+                <Text style={styles.register}>Ja possui conta? </Text>
+                <TouchableOpacity onPress={handlerRegister}>
+                    <Text style={styles.registerClick} onPress={() => navigation.navigate('Login')}>Entrar</Text>
                 </TouchableOpacity>
 
             </View>
@@ -109,7 +133,8 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     contentRegister: {
-        flexDirection: 'row'
+        flexDirection: 'row',
+        justifyContent: 'center',
     },
     register: {
         marginTop: 10,

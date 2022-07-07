@@ -47,7 +47,7 @@ const Header = ({ name }) => {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#8000ff',
+        backgroundColor:'#419639',
         paddingTop: statusBarHight,
         flexDirection: 'row',
         paddingStart: 16,
